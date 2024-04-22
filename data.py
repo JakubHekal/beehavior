@@ -4,7 +4,8 @@ from sensirion_i2c_driver.linux_i2c_transceiver import LinuxI2cTransceiver
 from pi1wire import Pi1Wire, Resolution, _exception
 from database_connection import DatabaseConnection
 
-def measure_temp_humi(device_file, slave_address = 0x44):
+
+def measure_temp_humi(device_file, slave_address=0x44):
     try:
         sht3x = Sht3xI2cDevice(I2cConnection(LinuxI2cTransceiver(device_file)), slave_address)
         sht3x.single_shot_measurement()
