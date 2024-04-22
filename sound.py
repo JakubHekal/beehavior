@@ -74,6 +74,6 @@ if __name__ == '__main__':
         print('RECORDING...')
     
     p.terminate()
-
+# tak co?
 
 
