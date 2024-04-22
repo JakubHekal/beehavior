@@ -1,13 +1,14 @@
 import pyaudio
 import wave
 
-FORMAT=pyaudio.paInt16
-SAMPLE_RATE= 44100
-CHANNELS= 1
-CHUNK= 4096
-RECORDING_DURATION= 5
+FORMAT = pyaudio.paInt16
+SAMPLE_RATE = 44100
+CHANNELS = 1
+CHUNK = 4096
+RECORDING_DURATION = 5
 
-def search_devices_by_name(name, max_devices = 2):
+
+def search_devices_by_name(name, max_devices=2):
     devices = []
     for i in range(p.get_device_count()):
         device_info = p.get_device_info_by_index(i)
@@ -16,6 +17,7 @@ def search_devices_by_name(name, max_devices = 2):
             if len(devices) >= max_devices:
                 break
     return devices
+
 
 def start_recording(device):
     store = {
@@ -31,10 +33,10 @@ def start_recording(device):
         
         if store['counter'] <= 0:
             store['file'].close()
-            return (None, pyaudio.paComplete)
+            return None, pyaudio.paComplete
         else:
             store['counter'] -= 1
-            return (None, pyaudio.paContinue)
+            return None, pyaudio.paContinue
         
     stream = p.open(
         format=FORMAT,
@@ -48,11 +50,13 @@ def start_recording(device):
     
     return stream
 
+
 def start_recordings(devices):
     streams = []
     for device in devices:
         streams.append(start_recording(device))
     return streams
+
 
 def is_any_stream_active(streams):
     for stream in streams:
