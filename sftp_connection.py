@@ -1,15 +1,18 @@
-import pysftp
+import paramiko
 
 class SFTPConnection:
 
     def __init__(self):
         try:
-            self.conn = pysftp.Connection(
-                host='fyzika.feec.vutbr.cz',
-                port='22',
+            self.conn = paramiko.SSHClient()
+            self.conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.conn.connect(
+                hostname='fyzika.feec.vutbr.cz',
+                port=22,
                 username='projekt',
                 password='ba7men6a',
-                default_path='/home/projekt'
+                look_for_keys=False
             )
+            self.sftp = self.conn.open_sftp()
         except:
             print('Failed connecting to SFTP')
