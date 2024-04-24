@@ -1,6 +1,7 @@
 import paramiko
 import os
 
+
 class SFTPConnection:
 
     def __init__(self):
@@ -17,8 +18,7 @@ class SFTPConnection:
             self.sftp = self.conn.open_sftp()
         except:
             print('Failed connecting to SFTP')
-            
-            
+
     def upload_recording(self, path):
         head, tail = os.path.split(path)
         remote_path = f'/home/projekt/{tail}'
@@ -27,18 +27,14 @@ class SFTPConnection:
             return remote_path
         except:
             print('Upload failed')
-            
-            
+
     def file_exists(self, path):
         try:
             self.sftp.stat(path)
             return True
         except IOError:
             return False
-            
-            
+
     def close(self):
         self.conn.close()
         self.sftp.close()
-            
-                  
