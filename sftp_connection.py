@@ -1,4 +1,5 @@
 import paramiko
+import os
 
 class SFTPConnection:
 
@@ -16,3 +17,18 @@ class SFTPConnection:
             self.sftp = self.conn.open_sftp()
         except:
             print('Failed connecting to SFTP')
+            
+            
+    def upload_recording(self, path):
+        head, tail = os.path.split(path)
+        try:
+            self.sftp.put(path, f'/home/projekt/{tail}')
+        except:
+            print('Upload failed')
+            
+            
+    def close(self):
+        self.conn.close()
+        self.sftp.close()
+            
+                  

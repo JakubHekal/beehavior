@@ -1,11 +1,13 @@
 import pyaudio
 import wave
+import os
+from sftp_connection import SFTPConnection
 
 FORMAT = pyaudio.paInt16
 SAMPLE_RATE = 44100
 CHANNELS = 1
 CHUNK = 4096
-RECORDING_DURATION = 5
+RECORDING_DURATION = 10
 
 
 def search_devices_by_name(name, max_devices=2):
@@ -19,11 +21,11 @@ def search_devices_by_name(name, max_devices=2):
     return devices
 
 
-def start_recording(device):
-    store = {
-        'counter': int((SAMPLE_RATE/CHUNK) * RECORDING_DURATION),
-        'file': wave.open(f'temp-test{device}.wav', 'wb')
-    }
+def start_recording(device, sftp):
+    store = {}
+    store['counter'] = int((SAMPLE_RATE/CHUNK) * RECORDING_DURATION)
+    store['path'] = os.path.abspath(f'test{device}.wav')
+    store['file'] = wave.open(store['path'], 'wb')
     store['file'].setnchannels(CHANNELS)
     store['file'].setsampwidth(p.get_sample_size(FORMAT))
     store['file'].setframerate(SAMPLE_RATE)
@@ -48,32 +50,37 @@ def start_recording(device):
         stream_callback=callback
         )
     
-    return stream
+    return stream, store['path']
 
 
-def start_recordings(devices):
+def start_recordings(devices, sftp):
     streams = []
     for device in devices:
-        streams.append(start_recording(device))
+        streams.append(start_recording(device, sftp))
     return streams
 
 
 def is_any_stream_active(streams):
-    for stream in streams:
+    for stream, path in streams:
         if stream.is_active():
             return True
     return False
-    
+             
 
 if __name__ == '__main__':
     p = pyaudio.PyAudio()
     devices = search_devices_by_name('USB Audio Device')
-    streams = start_recordings(devices)
+    sftp = SFTPConnection()
+    streams = start_recordings(devices, sftp)
     
     while is_any_stream_active(streams):
-        print('RECORDING...')
+        pass;
     
+    for stream, path in streams:
+        sftp.upload_recording(path)
+        
+    sftp.close()
     p.terminate()
-# tak co?
+
 
 
