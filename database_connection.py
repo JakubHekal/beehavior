@@ -1,18 +1,18 @@
 import MySQLdb
 
+
 class DatabaseConnection:
     
     def __init__(self):
         try:
             self.db = MySQLdb.connect(
-                host = 'fyzika.feec.vutbr.cz',
-                user = 'projekt_user',
-                password = 'han27dom',
-                database = 'projekt',
+                host='fyzika.feec.vutbr.cz',
+                user='projekt_user',
+                password='han27dom',
+                database='projekt',
             )
         except:
             print('Failed connecting to database')
-
 
     def insert_hive_data(self, hive, temp_in, humi_in, temp_out):
         try:
@@ -21,16 +21,14 @@ class DatabaseConnection:
             c.close()
         except:
             print('Insert into "measurements" failed')
-            
-            
+
     def insert_sound_data(self, hive, path):
         try:
             c = self.db.cursor()
-            c.execute('INSERT INTO recordings (hive, path) VALUES (%s, %s)',(hive, path))
+            c.execute('INSERT INTO recordings (hive, path) VALUES (%s, %s)', (hive, path))
             c.close()
         except:
             print('Insert into "recordings" failed')
-        
 
     def insert_error(self, hive, message):
         try:

@@ -76,7 +76,7 @@ if __name__ == '__main__':
     streams = start_recordings(devices, sftp)
     
     while is_any_stream_active(streams):
-        pass;
+        pass
     
     for stream, path, device in streams:
         remote_path = sftp.upload_recording(path)
