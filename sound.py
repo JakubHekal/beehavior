@@ -2,6 +2,7 @@ import pyaudio
 import wave
 import os
 from sftp_connection import SFTPConnection
+from database_connection import DatabaseConnection
 
 FORMAT = pyaudio.paInt16
 SAMPLE_RATE = 44100
@@ -50,7 +51,7 @@ def start_recording(device, sftp):
         stream_callback=callback
         )
     
-    return stream, store['path']
+    return stream, store['path'], device
 
 
 def start_recordings(devices, sftp):
@@ -71,13 +72,16 @@ if __name__ == '__main__':
     p = pyaudio.PyAudio()
     devices = search_devices_by_name('USB Audio Device')
     sftp = SFTPConnection()
+    db = DatabaseConnection()
     streams = start_recordings(devices, sftp)
     
     while is_any_stream_active(streams):
         pass;
     
-    for stream, path in streams:
-        sftp.upload_recording(path)
+    for stream, path, device in streams:
+        remote_path = sftp.upload_recording(path)
+        if sftp.file_exists(remote_path):
+            db.insert_sound_data(device, path)
         
     sftp.close()
     p.terminate()

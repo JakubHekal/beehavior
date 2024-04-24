@@ -21,7 +21,16 @@ class DatabaseConnection:
             c.close()
         except:
             print('Insert into "measurements" failed')
-    
+            
+            
+    def insert_sound_data(self, hive, path):
+        try:
+            c = self.db.cursor()
+            c.execute('INSERT INTO recordings (hive, path) VALUES (%s, %s)',(hive, path))
+            c.close()
+        except:
+            print('Insert into "recordings" failed')
+        
 
     def insert_error(self, hive, message):
         try:

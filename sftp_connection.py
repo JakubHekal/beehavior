@@ -21,10 +21,20 @@ class SFTPConnection:
             
     def upload_recording(self, path):
         head, tail = os.path.split(path)
+        remote_path = f'/home/projekt/{tail}'
         try:
-            self.sftp.put(path, f'/home/projekt/{tail}')
+            self.sftp.put(path, remote_path)
+            return remote_path
         except:
             print('Upload failed')
+            
+            
+    def file_exists(self, path):
+        try:
+            self.sftp.stat(path)
+            return True
+        except IOError:
+            return False
             
             
     def close(self):
