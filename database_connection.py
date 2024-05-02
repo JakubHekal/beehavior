@@ -1,7 +1,8 @@
 import MySQLdb
 import os   # ondrova změna
 from dotenv import load_dotenv  # ondrova změna
-load_dotenv('database.env')     # ondrova změna
+
+load_dotenv()     # ondrova změna
 
 
 class DatabaseConnection:
@@ -9,9 +10,9 @@ class DatabaseConnection:
     def __init__(self):
         try:
             self.db = MySQLdb.connect(
-                host=os.getenv('host'),             # jedna velká ondrova změna
-                user=os.getenv('user'),
-                password=os.getenv('password'),
+                host=os.getenv('database_host'),             # velké ondrovy změny
+                user=os.getenv('database_user'),
+                password=os.getenv('database_password'),
                 database=os.getenv('database'),
             )
         except:

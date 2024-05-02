@@ -1,7 +1,8 @@
 import paramiko
 import os
 from dotenv import load_dotenv  # ondrova změna
-load_dotenv('sftp.env')     # ondrova změna
+
+load_dotenv()     # ondrova změna
 
 
 class SFTPConnection:
@@ -11,10 +12,10 @@ class SFTPConnection:
             self.conn = paramiko.SSHClient()
             self.conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.conn.connect(
-                hostname=os.getenv('hostname'),     # velké ondrovy změny
-                port=int(os.getenv('port')),        # stačí bez integeru???
-                username=os.getenv('user'),
-                password=os.getenv('password'),
+                hostname=os.getenv('sftp_host'),        # velké ondrovy změny
+                port=int(os.getenv('sftp_port')),       # stačí bez integeru???
+                username=os.getenv('sftp_user'),
+                password=os.getenv('sftp_password'),
                 look_for_keys=False
             )
             self.sftp = self.conn.open_sftp()
