@@ -3,6 +3,7 @@ import wave
 import os
 import shortuuid
 
+
 class RecordingDevice:
     
     __pyaudio = pyaudio.PyAudio()
@@ -10,8 +11,7 @@ class RecordingDevice:
     def __init__(self, device_index):
         self.device_index = device_index
         self.stream = None
-    
-    
+
     def __recording_callback(self, in_data, frame_count, time_info, status_flags):
         self.__file.writeframes(in_data)
         
@@ -21,8 +21,7 @@ class RecordingDevice:
         else:
             self.__counter -= 1
             return None, pyaudio.paContinue
-    
-    
+
     def start_recording(self):
         FORMAT = pyaudio.paInt16
         SAMPLE_RATE = 44100
@@ -54,23 +53,20 @@ class RecordingDevice:
             )
         except:
             print('Failed to start recording')
-        
-        
+
     def is_recording_active(self):
         if self.stream:
             return self.stream.is_active()
         else:
             return False
-        
-        
+
     @staticmethod
     def is_any_recording_active(devices):
         for device in devices:
             if device.is_recording_active():
                 return True
         return False
-        
-    
+
     @staticmethod
     def get_devices_by_name(name, start_recording=False, max_devices=2):
         devices = []
