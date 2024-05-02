@@ -1,4 +1,7 @@
 import MySQLdb
+import os   # ondrova změna
+from dotenv import load_dotenv  # ondrova změna
+load_dotenv('database.env')     # ondrova změna
 
 
 class DatabaseConnection:
@@ -6,10 +9,10 @@ class DatabaseConnection:
     def __init__(self):
         try:
             self.db = MySQLdb.connect(
-                host='fyzika.feec.vutbr.cz',
-                user='projekt_user',
-                password='han27dom',
-                database='projekt',
+                host=os.getenv('host'),             # jedna velká ondrova změna
+                user=os.getenv('user'),
+                password=os.getenv('password'),
+                database=os.getenv('database'),
             )
         except:
             print('Failed connecting to database')
