@@ -1,8 +1,8 @@
 import MySQLdb
-import os   # ondrova změna
-from dotenv import load_dotenv  # ondrova změna
+import os   # Ondra
+from dotenv import load_dotenv  # Ondra
 
-load_dotenv()     # ondrova změna
+load_dotenv()     # Ondra
 
 
 class DatabaseConnection:
@@ -10,7 +10,7 @@ class DatabaseConnection:
     def __init__(self):
         try:
             self.db = MySQLdb.connect(
-                host=os.getenv('database_host'),             # velké ondrovy změny
+                host=os.getenv('database_host'),             # Ondra
                 user=os.getenv('database_user'),
                 password=os.getenv('database_password'),
                 database=os.getenv('database'),
