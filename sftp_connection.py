@@ -13,7 +13,7 @@ class SFTPConnection:
             self.conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.conn.connect(
                 hostname=os.getenv('sftp_host'),        # Ondra
-                port=int(os.getenv('sftp_port')),       # stačí bez integeru???
+                port=int(os.getenv('sftp_port')),       # stačí bez integeru?
                 username=os.getenv('sftp_user'),
                 password=os.getenv('sftp_password'),
                 look_for_keys=False
