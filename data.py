@@ -12,9 +12,9 @@ def measure_temp_humi(device_file, slave_address=0x44):
         temp, humi = sht3x.single_shot_measurement()
         return temp.degrees_celsius, humi.percent_rh
     except errors.I2cTransceiveError:
-        print(f'Sensor missing [I2C-{hex(slave_address)}]')
-    except:
-        print(f'Unknown error [I2C-{hex(slave_address)}]')
+        print(f'Sensor missing [{device_file}-{hex(slave_address)}]')
+    except Exception as e:
+        print(f'Unknown error [{device_file}-{hex(slave_address)}]: {e}')
 
 
 def measure_temp(mac):
@@ -23,14 +23,14 @@ def measure_temp(mac):
         return sensor.get_temperature()
     except _exception.NotFoundSensorException:
         print(f'Sensor missing [1Wire-{mac}]')
-    except:
-        print(f'Unknown error [1Wire-{mac}]')
+    except Exception as e:
+        print(f'Unknown error [1Wire-{mac}]: {e}')
         
 
 if __name__ == "__main__":
     database = DatabaseConnection()
     out = measure_temp('28c81fb20164ff')
-    hives = [measure_temp_humi('/dev/i2c-1'), measure_temp_humi('/dev/i2c-1', 0x45)]
+    hives = [measure_temp_humi('/dev/i2c-1'), measure_temp_humi('/dev/i2c-4')]
     
     for (i, hive) in enumerate(hives):
     
