@@ -5,7 +5,11 @@ import shortuuid
 
 
 class RecordingDevice:
-    
+
+    FORMAT = pyaudio.paInt16
+    SAMPLE_RATE = 44100
+    CHANNELS = 1
+    CHUNK = 4096
     __pyaudio = pyaudio.PyAudio()
     
     def __init__(self, device_index):
@@ -23,32 +27,27 @@ class RecordingDevice:
             return None, pyaudio.paContinue
 
     def start_recording(self):
-        FORMAT = pyaudio.paInt16
-        SAMPLE_RATE = 44100
-        CHANNELS = 1
-        CHUNK = 4096
-        RECORDING_DURATION = 10
-        
+
         self.file_path = os.path.abspath(f'{shortuuid.uuid()}.wav')
-        self.__counter = int((SAMPLE_RATE/CHUNK) * RECORDING_DURATION)
-        
+        self.__counter = int((RecordingDevice.SAMPLE_RATE / RecordingDevice.CHUNK) * 10)
+
         try:
             self.__file = wave.open(self.file_path, 'wb')
-            self.__file.setnchannels(CHANNELS)
-            self.__file.setsampwidth(RecordingDevice.__pyaudio.get_sample_size(FORMAT))
-            self.__file.setframerate(SAMPLE_RATE)
+            self.__file.setnchannels(RecordingDevice.CHANNELS)
+            self.__file.setsampwidth(RecordingDevice.__pyaudio.get_sample_size(RecordingDevice.FORMAT))
+            self.__file.setframerate(RecordingDevice.SAMPLE_RATE)
         except:
             print('Failed to open recording file')
             return
-        
+
         try:
             self.stream = RecordingDevice.__pyaudio.open(
-                format=FORMAT,
-                rate=SAMPLE_RATE,
-                channels=CHANNELS,
+                format=RecordingDevice.FORMAT,
+                rate=RecordingDevice.SAMPLE_RATE,
+                channels=RecordingDevice.CHANNELS,
                 input_device_index=self.device_index,
                 input=True,
-                frames_per_buffer=CHUNK,
+                frames_per_buffer=RecordingDevice.CHUNK,
                 stream_callback=self.__recording_callback
             )
         except:
@@ -59,6 +58,25 @@ class RecordingDevice:
             return self.stream.is_active()
         else:
             return False
+
+    def record(self, path, duration):
+        with wave.open(path, 'wb') as file:
+            file.setnchannels(RecordingDevice.CHANNELS)
+            file.setsampwidth(RecordingDevice.__pyaudio.get_sample_size(RecordingDevice.FORMAT))
+            file.setframerate(RecordingDevice.SAMPLE_RATE)
+
+            stream = RecordingDevice.__pyaudio.open(
+                input_device_index=self.device_index,
+                format=RecordingDevice.FORMAT,
+                channels=RecordingDevice.CHANNELS,
+                rate=RecordingDevice.SAMPLE_RATE,
+                input=True
+            )
+
+            for _ in range(0, RecordingDevice.SAMPLE_RATE // RecordingDevice.CHUNK * duration):
+                file.writeframes(stream.read(RecordingDevice.CHUNK))
+
+            stream.close()
 
     @staticmethod
     def is_any_recording_active(devices):
@@ -72,7 +90,7 @@ class RecordingDevice:
         devices = []
         for i in range(RecordingDevice.__pyaudio.get_device_count()):
             device_info = RecordingDevice.__pyaudio.get_device_info_by_index(i)
-            if (name in device_info.get('name') and device_info.get('maxInputChannels') > 0):
+            if name in device_info.get('name') and device_info.get('maxInputChannels') > 0:
                 device = RecordingDevice(i)
                 if start_recording:
                     device.start_recording()
@@ -80,4 +98,15 @@ class RecordingDevice:
                 if len(devices) >= max_devices:
                     break
         return devices
+
+    @staticmethod
+    def get_device_by_name(name, index=0):
+        count = 0
+        for i in range(RecordingDevice.__pyaudio.get_device_count()):
+            device_info = RecordingDevice.__pyaudio.get_device_info_by_index(i)
+            if name in device_info.get('name') and device_info.get('maxInputChannels') > 0:
+                if count == index:
+                    return RecordingDevice(i)
+                else:
+                    count += 1
              

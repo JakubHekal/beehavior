@@ -1,22 +1,18 @@
 import MySQLdb
-import os   # Ondra
-from dotenv import load_dotenv  # Ondra
-
-load_dotenv()     # Ondra
 
 
 class DatabaseConnection:
     
-    def __init__(self):
+    def __init__(self, host, user, password, database):
         try:
             self.db = MySQLdb.connect(
-                host=os.getenv('database_host'),             # Ondra
-                user=os.getenv('database_user'),
-                password=os.getenv('database_password'),
-                database=os.getenv('database'),
+                host=host,
+                user=user,
+                password=password,
+                database=database,
             )
-        except:
-            print('Failed connecting to database')
+        except Exception as e:
+            print(f'Failed connecting to database: {e}')
 
     def insert_hive_data(self, hive, temp_in, humi_in, temp_out):
         try:
