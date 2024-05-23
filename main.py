@@ -1,5 +1,6 @@
 import concurrent.futures
 import time
+import datetime
 import schedule
 import os
 import pywifi
@@ -16,11 +17,12 @@ def record(hive_id, microphone):
         os.path.dirname(__file__),
         f"{hive_id}-{int(time.time())}.wav"
     )
+    timestamp = datetime.datetime.now()
     microphone.record(path, config['general']['recording']['duration'])
 
     remote_path = sftp.upload_recording(path)
     if sftp.file_exists(remote_path):
-        db.insert_sound_data(hive_id, remote_path)
+        db.insert_sound_data(hive_id, remote_path, timestamp)
     os.remove(path)
         
 
@@ -33,7 +35,7 @@ def measure(hive_id, sensors):
             temperature_out = device.measure()
         else:
             temperature_in, humidity_in = device.measure()
-    db.insert_hive_data(hive_id, temperature_in, humidity_in, temperature_out)
+    db.insert_hive_data(hive_id, temperature_in, humidity_in, temperature_out, datetime.datetime.now())
 
 
 if __name__ == '__main__':
@@ -61,7 +63,7 @@ if __name__ == '__main__':
     
     time.sleep(30)
     
-    assert interface.status() == 4:
+    assert interface.status() == 4
 
     sftp = SFTPConnection(
         host=config['sftp']['host'],
