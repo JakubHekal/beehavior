@@ -23,7 +23,7 @@ class I2CSensorDevice(SensorDevice):
     def measure(self):
         self.sensor.single_shot_measurement()
         temperature, humidity = self.sensor.single_shot_measurement()
-        return (temperature.degrees_celsius, humidity.percent_rh)
+        return temperature.degrees_celsius, humidity.percent_rh
 
 
 class OneWireSensorDevice(SensorDevice):

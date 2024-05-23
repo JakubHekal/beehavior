@@ -24,7 +24,6 @@ def record(hive_id, microphone):
     if sftp.file_exists(remote_path):
         db.insert_sound_data(hive_id, remote_path, timestamp)
     os.remove(path)
-        
 
 
 def measure(hive_id, sensors):
@@ -43,26 +42,26 @@ if __name__ == '__main__':
         os.path.dirname(__file__),
         'config.yaml'
     ))
-    
+
     wifi = pywifi.PyWiFi()
     interface = None
     for i in wifi.interfaces():
         if i.name() == config['wifi']['interface']:
             interface = i
-    
+
     profile = pywifi.Profile()
     profile.ssid = config['wifi']['ssid']
     profile.auth = 0
     profile.akm.append(4)
     profile.cipher = 3
     profile.key = config['wifi']['password']
-    
+
     interface.remove_all_network_profiles()
     profile = interface.add_network_profile(profile)
     interface.connect(profile)
-    
+
     time.sleep(30)
-    
+
     assert interface.status() == 4
 
     sftp = SFTPConnection(
@@ -100,4 +99,3 @@ if __name__ == '__main__':
         while 1:
             schedule.run_pending()
             time.sleep(1)
-

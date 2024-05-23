@@ -4,10 +4,22 @@
 > The configuration file is written using YAML. You can find its syntax nicely explained here https://en.wikipedia.org/wiki/YAML#Syntax
 
 Main configuration file `config.yaml` is located in root of the project. It needs to be available on all stations. 
-It has 5 main sections `database`, `sftp`, `general`, `microphones` and `sensors`.
+It has 6 main sections `wifi`, `database`, `sftp`, `general`, `microphones` and `sensors`.
 
 > **Warning:**
 > Never commit config files to GitHub repository
+
+## Wifi
+Section for setting up wireless connection to the internet
+```yaml
+wifi:
+  ssid: 'wifi'
+  password: 'pass123'
+  interface: 'wlan0'
+```
+- `ssid`: The ssid of the network.
+- `password`: The password to connect to the network.
+- `interface`: The interface used for connecting.
 
 ## Database
 This section contains information about connection to the SQL database.
