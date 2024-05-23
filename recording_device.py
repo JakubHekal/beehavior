@@ -14,50 +14,6 @@ class RecordingDevice:
     
     def __init__(self, device_index):
         self.device_index = device_index
-        self.stream = None
-
-    def __recording_callback(self, in_data, frame_count, time_info, status_flags):
-        self.__file.writeframes(in_data)
-        
-        if self.__counter <= 0:
-            self.__file.close()
-            return None, pyaudio.paComplete
-        else:
-            self.__counter -= 1
-            return None, pyaudio.paContinue
-
-    def start_recording(self):
-
-        self.file_path = os.path.abspath(f'{shortuuid.uuid()}.wav')
-        self.__counter = int((RecordingDevice.SAMPLE_RATE / RecordingDevice.CHUNK) * 10)
-
-        try:
-            self.__file = wave.open(self.file_path, 'wb')
-            self.__file.setnchannels(RecordingDevice.CHANNELS)
-            self.__file.setsampwidth(RecordingDevice.__pyaudio.get_sample_size(RecordingDevice.FORMAT))
-            self.__file.setframerate(RecordingDevice.SAMPLE_RATE)
-        except:
-            print('Failed to open recording file')
-            return
-
-        try:
-            self.stream = RecordingDevice.__pyaudio.open(
-                format=RecordingDevice.FORMAT,
-                rate=RecordingDevice.SAMPLE_RATE,
-                channels=RecordingDevice.CHANNELS,
-                input_device_index=self.device_index,
-                input=True,
-                frames_per_buffer=RecordingDevice.CHUNK,
-                stream_callback=self.__recording_callback
-            )
-        except:
-            print('Failed to start recording')
-
-    def is_recording_active(self):
-        if self.stream:
-            return self.stream.is_active()
-        else:
-            return False
 
     def record(self, path, duration):
         with wave.open(path, 'wb') as file:
@@ -78,15 +34,9 @@ class RecordingDevice:
 
             stream.close()
 
-    @staticmethod
-    def is_any_recording_active(devices):
-        for device in devices:
-            if device.is_recording_active():
-                return True
-        return False
 
     @staticmethod
-    def get_devices_by_name(name, start_recording=False, max_devices=2):
+    def get_devices_by_name(name, start_recording=False, max_devices=10):
         devices = []
         for i in range(RecordingDevice.__pyaudio.get_device_count()):
             device_info = RecordingDevice.__pyaudio.get_device_info_by_index(i)
@@ -97,16 +47,10 @@ class RecordingDevice:
                 devices.append(device)
                 if len(devices) >= max_devices:
                     break
+        
         return devices
 
     @staticmethod
     def get_device_by_name(name, index=0):
-        count = 0
-        for i in range(RecordingDevice.__pyaudio.get_device_count()):
-            device_info = RecordingDevice.__pyaudio.get_device_info_by_index(i)
-            if name in device_info.get('name') and device_info.get('maxInputChannels') > 0:
-                if count == index:
-                    return RecordingDevice(i)
-                else:
-                    count += 1
+        return RecordingDevice.get_devices_by_name(name)[index]
              

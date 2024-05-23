@@ -2,8 +2,9 @@ mysqlclient==2.2.4
 paramiko==3.4.0
 pi1wire==0.3.0
 PyAudio==0.2.14
-ruamel.base==1.0.0
+ruamel.yaml==0.18.6
 schedule==1.2.1
 schema==0.7.7
 sensirion_i2c_driver==1.0.0
 sensirion_i2c_sht==0.4.0
+pywifi==1.1.12

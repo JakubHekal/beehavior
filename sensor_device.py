@@ -9,9 +9,10 @@ class SensorDevice:
 
     @staticmethod
     def setup_from_config(config):
-        match config['comm']:
-            case 'i2c': I2CSensorDevice(config['device_file'], config['address'], config['ambient'])
-            case 'w1': OneWireSensorDevice(config['mac'], config['ambient'])
+        if config['comm'] == 'i2c':
+            return I2CSensorDevice(config['device_file'], int(config['address'], 16), config['ambient'])
+        elif config['comm'] == 'w1':
+            return OneWireSensorDevice(config['mac'], config['ambient'])
 
 
 class I2CSensorDevice(SensorDevice):
@@ -22,7 +23,7 @@ class I2CSensorDevice(SensorDevice):
     def measure(self):
         self.sensor.single_shot_measurement()
         temperature, humidity = self.sensor.single_shot_measurement()
-        return temperature.degrees_celsius, humidity.percent_rh
+        return (temperature.degrees_celsius, humidity.percent_rh)
 
 
 class OneWireSensorDevice(SensorDevice):

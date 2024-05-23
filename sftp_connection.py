@@ -15,11 +15,11 @@ class SFTPConnection:
                 password=password,
                 look_for_keys=False
             )
-            self.sftp = self.conn.open_sftp()
         except:
             print('Failed connecting to SFTP')
 
     def upload_recording(self, path):
+        self.sftp = self.conn.open_sftp()
         head, tail = os.path.split(path)
         remote_path = f'/home/projekt/{tail}'
         try:
@@ -27,14 +27,16 @@ class SFTPConnection:
             return remote_path
         except:
             print('Upload failed')
+        self.sftp.close()
 
     def file_exists(self, path):
+        self.sftp = self.conn.open_sftp()
         try:
             self.sftp.stat(path)
             return True
         except IOError:
             return False
+        self.sftp.close()
 
     def close(self):
         self.conn.close()
-        self.sftp.close()

@@ -5,6 +5,11 @@ from schema import Schema, Or, Use, Optional
 def get_config(path):
 
     schema = Schema({
+        'wifi': {
+            'ssid': Use(str),
+            'password': Use(str),
+            'interface': Use(str), 
+        },
         'database': {
             'host': Use(str),
             'user': Use(str),
