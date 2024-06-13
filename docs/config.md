@@ -21,38 +21,11 @@ wifi:
 - `password`: The password to connect to the network.
 - `interface`: The interface used for connecting.
 
-## Database
-This section contains information about connection to the SQL database.
-```yaml
-database:
-  host: 'example.com'
-  user: 'test'
-  password: 'pass123'
-  database: 'base'
-```
-- `host`: The hostname of the database server.
-- `user`: The username to connect to the database.
-- `password`: The password to connect to the database.
-- `database`: The name of the database.
-
-## SFTP
-Section for specifying information about the connection to the storage server using SFTP.
-```yaml
-sftp:
-  host: 'example.com'
-  port: 22
-  user: 'test'
-  password: 'pass123'
-```
-- `host`: The hostname of the SFTP server.
-- `port`: The port number of the SFTP server.
-- `user`: The username to connect to the SFTP server.
-- `password`: The password to connect to the SFTP server.
-
 ## General
 Section that contains properties specifying the behaviour of the station
 ```yaml
 general:
+  api_root: 'https://api.vcelky.com'
   station: 'sad'
   hives: [1,2]
   recording:
@@ -61,6 +34,7 @@ general:
   measurements:
     interval: 600
 ```
+- `api_root`: The root url of remote API.
 - `station`: The unique ID given to each station.
 - `hives`: The list of hive IDs connected to specified station.
 - `recording`: Properties that control sound recording 

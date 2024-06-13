@@ -4,11 +4,10 @@ import datetime
 import schedule
 import os
 import pywifi
+import requests
 from config import get_config
-from database_connection import DatabaseConnection
 from recording_device import RecordingDevice
 from sensor_device import *
-from sftp_connection import SFTPConnection
 
 
 def record(hive_id, microphone):
@@ -20,9 +19,15 @@ def record(hive_id, microphone):
     timestamp = datetime.datetime.now()
     microphone.record(path, config['general']['recording']['duration'])
 
-    remote_path = sftp.upload_recording(path)
-    if sftp.file_exists(remote_path):
-        db.insert_sound_data(hive_id, remote_path, timestamp)
+    with open(path, 'rb') as file:
+        requests.post(
+            config['general']['api_root'] + '/recordings',
+            data={
+                'hive_id': hive_id,
+                'recorded_at': timestamp
+            },
+            files={'recording': file}
+        )
     os.remove(path)
 
 
@@ -34,7 +39,17 @@ def measure(hive_id, sensors):
             temperature_out = device.measure()
         else:
             temperature_in, humidity_in = device.measure()
-    db.insert_hive_data(hive_id, temperature_in, humidity_in, temperature_out, datetime.datetime.now())
+
+    requests.post(
+        config['general']['api_root'] + '/measurements',
+        {
+            'hive_id': hive_id,
+            'temp_in': temperature_in,
+            'humi_in': humidity_in,
+            'temp_out': temperature_out,
+            'measured_at': datetime.datetime.now()
+        }
+    )
 
 
 if __name__ == '__main__':
@@ -63,19 +78,6 @@ if __name__ == '__main__':
     time.sleep(30)
 
     assert interface.status() == 4
-
-    sftp = SFTPConnection(
-        host=config['sftp']['host'],
-        port=config['sftp']['port'],
-        user=config['sftp']['user'],
-        password=config['sftp']['password']
-    )
-    db = DatabaseConnection(
-        host=config['database']['host'],
-        user=config['database']['user'],
-        password=config['database']['password'],
-        database=config['database']['database']
-    )
 
     hive_sensors = {}
     for sensor_config in config['sensors']:

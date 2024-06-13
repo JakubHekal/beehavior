@@ -10,19 +10,8 @@ def get_config(path):
             'password': Use(str),
             'interface': Use(str), 
         },
-        'database': {
-            'host': Use(str),
-            'user': Use(str),
-            'password': Use(str),
-            'database': Use(str)
-        },
-        'sftp': {
-            'host': Use(str),
-            'port': Use(int),
-            'user': Use(str),
-            'password': Use(str),
-        },
         'general': {
+            'api_root': Use(str),
             'station': Use(str),
             'hives': [Use(str)],
             'recording': {
