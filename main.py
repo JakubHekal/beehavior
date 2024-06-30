@@ -5,6 +5,8 @@ import schedule
 import os
 import pywifi
 import requests
+from pywifi import const
+
 from config import get_config
 from recording_device import RecordingDevice
 from sensor_device import *
@@ -20,14 +22,15 @@ def record(hive_id, microphone):
     microphone.record(path, config['general']['recording']['duration'])
 
     with open(path, 'rb') as file:
-        requests.post(
+        requests_queue.append(requests.Request(
+            'POST',
             config['general']['api_root'] + '/recordings',
             data={
                 'hive_id': hive_id,
                 'recorded_at': timestamp
             },
             files={'recording': file}
-        )
+        ))
     os.remove(path)
 
 
@@ -40,16 +43,23 @@ def measure(hive_id, sensors):
         else:
             temperature_in, humidity_in = device.measure()
 
-    requests.post(
+    requests_queue.append(requests.Request(
+        'POST',
         config['general']['api_root'] + '/measurements',
-        {
+        data={
             'hive_id': hive_id,
             'temp_in': temperature_in,
             'humi_in': humidity_in,
             'temp_out': temperature_out,
             'measured_at': datetime.datetime.now()
         }
-    )
+    ))
+
+
+def handle_requests():
+    if len(requests_queue) > 0:
+        request = requests_queue.pop(0).prepare()
+        requests_session.send(request)
 
 
 if __name__ == '__main__':
@@ -59,25 +69,26 @@ if __name__ == '__main__':
     ))
 
     wifi = pywifi.PyWiFi()
+
     interface = None
     for i in wifi.interfaces():
         if i.name() == config['wifi']['interface']:
             interface = i
 
-    profile = pywifi.Profile()
-    profile.ssid = config['wifi']['ssid']
-    profile.auth = 0
-    profile.akm.append(4)
-    profile.cipher = 3
-    profile.key = config['wifi']['password']
+    if interface.status() != const.IFACE_CONNECTED:
+        profile = pywifi.Profile()
+        profile.ssid = config['wifi']['ssid']
+        profile.auth = const.AUTH_ALG_OPEN
+        profile.akm.append(const.AKM_TYPE_WPA2PSK)
+        profile.cipher = const.CIPHER_TYPE_CCMP
+        profile.key = config['wifi']['password']
 
-    interface.remove_all_network_profiles()
-    profile = interface.add_network_profile(profile)
-    interface.connect(profile)
+        interface.remove_all_network_profiles()
+        profile = interface.add_network_profile(profile)
+        interface.connect(profile)
 
-    time.sleep(30)
-
-    assert interface.status() == 4
+        time.sleep(30)
+        assert interface.status() == const.IFACE_CONNECTED
 
     hive_sensors = {}
     for sensor_config in config['sensors']:
@@ -93,11 +104,15 @@ if __name__ == '__main__':
         recording_device = RecordingDevice.get_device_by_name(microphone_config['name'], microphone_config['index'])
         hive_microphone[f"{config['general']['station']}-{microphone_config['hive']}"] = recording_device
 
+    requests_queue = []
+    requests_session = requests.Session()
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         for h, m in hive_microphone.items():
             schedule.every(config['general']['recording']['interval']).seconds.do(executor.submit, record, h, m)
         for h, s in hive_sensors.items():
             schedule.every(config['general']['measurements']['interval']).seconds.do(executor.submit, measure, h, s)
         while 1:
+            executor.submit(handle_requests)
             schedule.run_pending()
             time.sleep(1)
