@@ -65,6 +65,7 @@ def handle_requests():
                         'recording': file
                     }
                 )
+                os.remove(request_data['filepath'])
             print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... sent')
         else:
             print(f'Request {request_data["path"]} ... started')
