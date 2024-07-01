@@ -54,8 +54,9 @@ def measure(hive_id, sensors):
 
 def handle_requests():
     if len(requests_queue) > 0:
-        request_data = requests_queue.pop(0).prepare()
+        request_data = requests_queue.pop(0)
         if 'filepath' in request_data:
+            print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... started')
             with open(request_data['filepath'], 'rb') as file:
                 requests.post(
                     config['general']['api_root'] + request_data['path'],
@@ -64,11 +65,14 @@ def handle_requests():
                         'recording': file
                     }
                 )
+            print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... sent')
         else:
+            print(f'Request {request_data["path"]} ... started')
             requests.post(
                 config['general']['api_root'] + request_data['path'],
                 data=request_data['data']
             )
+            print(f'Request {request_data["path"]} ... sent')
 
 
 if __name__ == '__main__':
@@ -120,8 +124,9 @@ if __name__ == '__main__':
             schedule.every(config['general']['recording']['interval']).seconds.do(executor.submit, record, h, m)
         for h, s in hive_sensors.items():
             schedule.every(config['general']['measurements']['interval']).seconds.do(executor.submit, measure, h, s)
+        request_thread = executor.submit(handle_requests)
         while 1:
-            if request_thread is None or request_thread.done():
+            if request_thread.done():
                 request_thread = executor.submit(handle_requests)
             schedule.run_pending()
             time.sleep(1)
