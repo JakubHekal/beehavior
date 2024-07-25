@@ -83,7 +83,7 @@ def handle_requests():
                     }
                 )
 
-                if response.status_code != 202:
+                if response.status_code != 200:
                     requests_queue.append(request_data)
                     print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... failed {response.status_code}')
                 else:
