@@ -1,4 +1,5 @@
 import concurrent.futures
+import glob
 import time
 import datetime
 import schedule
@@ -52,28 +53,54 @@ def measure(hive_id, sensors):
     })
 
 
+def load_cache():
+    for i, filename in enumerate(glob.glob(os.path.join(os.path.dirname(__file__), '*.wav'))):
+        parts = filename.replace('.wav', '').split('-')
+        hive_id = '-'.join(parts[0:2])
+        timestamp = datetime.datetime.fromtimestamp(int(parts[2]))
+
+        requests_queue.append({
+            'path': '/recordings',
+            'data': {
+                'hive_id': hive_id,
+                'recorded_at': timestamp
+            },
+            'filepath': filename
+        })
+
+
 def handle_requests():
     if len(requests_queue) > 0:
         request_data = requests_queue.pop(0)
         if 'filepath' in request_data:
             print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... started')
             with open(request_data['filepath'], 'rb') as file:
-                requests.post(
+                response = requests.post(
                     config['general']['api_root'] + request_data['path'],
                     data=request_data['data'],
                     files={
                         'recording': file
                     }
                 )
-                os.remove(request_data['filepath'])
-            print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... sent')
+
+                if response.status_code != 202:
+                    requests_queue.append(request_data)
+                    print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... failed {response.status_code}')
+                else:
+                    os.remove(request_data['filepath'])
+                    print(f'Request {request_data["path"]} with file {request_data["filepath"]} ... sent')
+
         else:
             print(f'Request {request_data["path"]} ... started')
-            requests.post(
+            response = requests.post(
                 config['general']['api_root'] + request_data['path'],
                 data=request_data['data']
             )
-            print(f'Request {request_data["path"]} ... sent')
+            if response.status_code != 202:
+                requests_queue.append(request_data)
+                print(f'Request {request_data["path"]} ... failed {response.status_code}')
+            else:
+                print(f'Request {request_data["path"]} ... sent')
 
 
 if __name__ == '__main__':
@@ -119,6 +146,8 @@ if __name__ == '__main__':
         hive_microphone[f"{config['general']['station']}-{microphone_config['hive']}"] = recording_device
 
     requests_queue = []
+
+    load_cache()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         for h, m in hive_microphone.items():
