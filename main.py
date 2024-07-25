@@ -96,7 +96,7 @@ def handle_requests():
                 config['general']['api_root'] + request_data['path'],
                 data=request_data['data']
             )
-            if response.status_code != 202:
+            if response.status_code != 200:
                 requests_queue.append(request_data)
                 print(f'Request {request_data["path"]} ... failed {response.status_code}')
             else:
